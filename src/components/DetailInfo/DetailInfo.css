@@ -17,12 +17,10 @@
   padding: 30px 30px 30px 30px;
 }
 
-.detailInfoTitleDiv {
-  font-size: 17px;
-  font-weight: bold;
-  color: white;
-  border-bottom: #4eb4c3 1px solid;
+.detailInfoTitleDiv, .detailMarketTitleDiv {
   word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
 }
 .detailInfoContentDiv {
   font-size: 17px;

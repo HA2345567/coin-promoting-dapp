@@ -1,34 +1,32 @@
 .filterDivWrapped {
-  width: calc(100% - 10px);
-  /* height: 100%; */
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-
-  background-image: linear-gradient(to right, #dc1bd9, #4eb4c3);
-  padding: 5px 5px 5px 5px;
-  border-top-right-radius: 50px;
+  padding: 2vw;
   position: relative;
-  margin-top: 50px;
-  margin-bottom: 150px;
+  z-index: var(--z-base);
 }
 .filterDiv {
   width: 100%;
   padding: 150px 20px 20px 20px;
-  background-color: #290825;
-  border-top-right-radius: 50px;
-  z-index: 1;
+  background-color: var(--surface-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  position: relative;
+  z-index: var(--z-base);
 }
 
 .filterOptionDiv {
-  position: absolute;
-  width: calc(100% - 100px);
-  height: 250px;
-  top: -25px;
-  left: 30px;
-  background-color: transparent;
-  /* overflow-x: scroll; */
+  position: relative;
+  width: 100%;
+  text-align: center;
   display: flex;
-  align-items: top;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  z-index: var(--z-dropdown);
 }
 
 .diamondFilterDiv {
@@ -106,12 +104,11 @@
   background-image: linear-gradient(to right, #f606f9, #3ebadf);
 }
 
-.networkFilterDiv {
+.networkFilterDiv, .categoryFilterDiv {
+  position: relative;
   width: 150px;
   min-width: 150px;
-  border-radius: 20px;
-  margin-left: auto;
-  margin-right: 20px;
+  z-index: var(--z-dropdown);
 }
 
 .networkTitleDiv {
@@ -138,11 +135,6 @@
   background-image: linear-gradient(to right, #f606f9, #3ebadf);
 }
 
-.categoryFilterDiv {
-  /* margin-left: auto; */
-  z-index: 2;
-  margin-right: 0;
-}
 .categoryTitleDiv {
   width: 150px;
   min-width: 150px;
@@ -167,12 +159,19 @@
   background-image: linear-gradient(to right, #f606f9, #3ebadf);
 }
 
-.categorySubfilterDiv {
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+.networkSubfilterDiv, .categorySubfilterDiv {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: var(--surface-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--hover-shadow);
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  z-index: calc(var(--z-dropdown) + 10);
+  transform-origin: top;
+  transition: all 0.2s ease;
 }
 
 .voteBtnDiv {
@@ -363,14 +362,21 @@
   cursor: pointer;
 }
 
-.networkSubfilterDiv {
-  width: 150px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  font-size: 17px;
+.subFilterETH, .subFilterBSC, .topVoteDiv, .todayTopVoteDiv, .todayListedDiv, .presaleDiv {
+  padding: 0.75rem 1rem;
+  color: var(--text-color);
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  transition: all 0.2s ease;
+  background-color: var(--surface-color);
+  width: 100%;
+  text-align: center;
+  border-bottom: 1px solid #3ebadf;
+}
+
+.subFilterETH:hover, .subFilterBSC:hover, .topVoteDiv:hover, .todayTopVoteDiv:hover, .todayListedDiv:hover, .presaleDiv:hover {
+  background-image: linear-gradient(to right, #f606f9, #3ebadf);
+  transform: translateY(-2px);
 }
 
 .subFilterETH {
@@ -393,32 +399,33 @@
   font-size: 20px;
   cursor: pointer;
 }
+
+/* Fix table z-index */
+.MuiTable-root {
+  z-index: var(--z-table) !important;
+  position: relative;
+}
+
+/* Fix modal z-index */
+.MuiDialog-root {
+  z-index: var(--z-modal) !important;
+}
+
+.MuiBackdrop-root {
+  z-index: var(--z-modal-backdrop) !important;
+}
+
+/* Fix scrolling issues */
 @media only screen and (max-width: 1600px) {
   .filterDiv {
-    overflow-x: scroll;
-    justify-content: start;
+    overflow: visible;
     padding-top: 80px;
     font-size: 15px;
-    scrollbar-width: thin;
   }
   .filterOptionDiv {
-    overflow-x: scroll;
-  }
-  .voteBtn {
-    font-size: 12px;
-  }
-
-  .voteBtn {
-    font-size: 12px;
-  }
-
-  .voteBtnWrapped {
-    width: 100px;
-  }
-
-  .voteBtnWrapped {
-    width: 100px;
-    margin-left: 10px;
+    overflow: visible;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }
 

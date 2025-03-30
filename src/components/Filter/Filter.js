@@ -1,11 +1,11 @@
 import './Filter.css';
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import emeraldImg from '../../assets/img/emerald.png';
 import rubyImg from '../../assets/img/ruby.png';
 import diamondImg from '../../assets/img/diamond.png';
 import loadingImg from '../../assets/img/loading.svg';
-import { useEffect, useState, useContext } from 'react';
+import { useContext } from 'react';
 import MUIDataTable from 'mui-datatables';
 import { createTheme, ThemeProvider } from '@material-ui/core/';
 import { database } from '../../helpers/firebase.js';
@@ -21,6 +21,26 @@ import nonwatchlistImg from '../../assets/img/nonwatchlisted.png';
 import axios from 'axios';
 import { ENVS } from '../../helpers/configurations';
 import { ethers } from 'ethers';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const dropdownVariants = {
+  hidden: { 
+    opacity: 0,
+    y: -10,
+    scale: 0.95,
+    transition: { duration: 0.2 }
+  },
+  visible: { 
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { 
+      type: "spring",
+      stiffness: 300,
+      damping: 24
+    }
+  }
+};
 
 export const Filter = (props) => {
   const [load, setLoaded] = useState(0);
@@ -53,16 +73,33 @@ export const Filter = (props) => {
 
   const navigate = useNavigate();
 
-  useEffect(() => {}, [
-    showCategorySubFilter,
-    showNetworkSubFilter,
-    synchroTables,
-    diamondSelected,
-    rubySelected,
-    emeraldSelected,
-    networkTitle,
-    categoryTitle,
-  ]);
+  const networkRef = useRef(null);
+  const categoryRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (networkRef.current && !networkRef.current.contains(event.target)) {
+        setShowNetworkSubFilter('none');
+      }
+      if (categoryRef.current && !categoryRef.current.contains(event.target)) {
+        setShowCategorySubFilter('none');
+      }
+    };
+
+    // Close dropdowns on scroll
+    const handleScroll = () => {
+      setShowNetworkSubFilter('none');
+      setShowCategorySubFilter('none');
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -728,12 +765,9 @@ export const Filter = (props) => {
     }
   };
 
-  const networkMouseEntered = (flag) => {
-    if (flag === true) {
-      setShowNetworkSubFilter('block');
-    } else {
-      setShowNetworkSubFilter('none');
-    }
+  const networkMouseEntered = () => {
+    setShowCategorySubFilter('none'); // Close other dropdown
+    setShowNetworkSubFilter('block');
   };
 
   const categoryFilterClicked = () => {
@@ -744,12 +778,9 @@ export const Filter = (props) => {
     }
   };
 
-  const categoryMouseEntered = (flag) => {
-    if (flag === true) {
-      setShowCategorySubFilter('block');
-    } else {
-      setShowCategorySubFilter('none');
-    }
+  const categoryMouseEntered = () => {
+    setShowNetworkSubFilter('none'); // Close other dropdown
+    setShowCategorySubFilter('block');
   };
   const getMuiThemeForFilter = () =>
     createTheme({
@@ -903,127 +934,123 @@ export const Filter = (props) => {
       {loading === false ? (
         <div className="filterDiv">
           <div className="filterOptionDiv">
-            <div className="diamondFilterDiv">
-              {diamondSelected === true ? (
-                <div
-                  className="diamondFilterWrappedDiv"
-                  style={{ backgroundImage: 'linear-gradient(to right, #DC1Bd9, #4EB4C3)' }}
-                  onClick={diamondFilterClicked}
-                >
-                  <img src={diamondImg} alt="diamondLogo" />
-                  <span>&nbsp;Diamond</span>
-                </div>
-              ) : (
-                <div className="diamondFilterWrappedDiv" onClick={diamondFilterClicked}>
-                  <img src={diamondImg} alt="diamondLogo" />
-                  <span>&nbsp;Diamond</span>
-                </div>
-              )}
-            </div>
-
-            <div className="rubyFilterDiv">
-              {rubySelected === true ? (
-                <div
-                  className="rubyFilterWrappedDiv"
-                  style={{ backgroundImage: 'linear-gradient(to right, #DC1Bd9, #4EB4C3)' }}
-                  onClick={rubyFilterClicked}
-                >
-                  <img src={rubyImg} alt="rubyLogo" />
-                  <span>&nbsp;Ruby</span>
-                </div>
-              ) : (
-                <div className="rubyFilterWrappedDiv" onClick={rubyFilterClicked}>
-                  <img src={rubyImg} alt="rubyLogo" />
-                  <span>&nbsp;Ruby</span>
-                </div>
-              )}
-            </div>
-
-            <div className="emeraldFilterDiv">
-              {emeraldSelected === true ? (
-                <div
-                  className="emeraldFilterWrappedDiv"
-                  style={{ backgroundImage: 'linear-gradient(to right, #DC1Bd9, #4EB4C3)' }}
-                  onClick={emeraldFilterClicked}
-                >
-                  <img src={emeraldImg} alt="emeraldLogo" />
-                  <span>&nbsp;Emerald</span>
-                </div>
-              ) : (
-                <div className="emeraldFilterWrappedDiv" onClick={emeraldFilterClicked}>
-                  <img src={emeraldImg} alt="emeraldLogo" />
-                  <span>&nbsp;Emerald</span>
-                </div>
-              )}
-            </div>
-
-            <div
-              className="networkFilterDiv"
-              onClick={networkFilterClicked}
-              onMouseEnter={() => networkMouseEntered(true)}
-              onMouseLeave={() => networkMouseEntered(false)}
+            <motion.div 
+              className="diamondFilterDiv"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <div className="networkTitleDiv">
-                {networkSelected === true ? (
-                  <div
-                    className="networkFilterTitleWrappedDiv"
-                    onClick={networkFilterClicked}
-                    style={{ backgroundImage: 'linear-gradient(to right, #DC1Bd9, #4EB4C3)' }}
-                  >
-                    <span>&nbsp;{networkTitle}</span>
-                  </div>
-                ) : (
-                  <div className="networkFilterTitleWrappedDiv">
-                    <span>&nbsp;{networkTitle}</span>
-                  </div>
-                )}
+              <div className={`diamondFilterWrappedDiv ${diamondSelected ? 'selected' : ''}`} onClick={diamondFilterClicked}>
+                <img src={diamondImg} alt="Diamond" />
+                <span>Diamond</span>
               </div>
+            </motion.div>
 
-              <div className="networkSubfilterDiv" style={{ display: showNetworkSubFilter }}>
-                <div className="subFilterETH" onClick={ethNetworkFilterClicked}>
-                  - ETH
-                </div>
-                <div className="subFilterBSC" onClick={bscNetworkFilterClicked}>
-                  - BSC
-                </div>
+            <motion.div 
+              className="rubyFilterDiv"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className={`rubyFilterWrappedDiv ${rubySelected ? 'selected' : ''}`} onClick={rubyFilterClicked}>
+                <img src={rubyImg} alt="Ruby" />
+                <span>Ruby</span>
               </div>
+            </motion.div>
+
+            <motion.div 
+              className="emeraldFilterDiv"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className={`emeraldFilterWrappedDiv ${emeraldSelected ? 'selected' : ''}`} onClick={emeraldFilterClicked}>
+                <img src={emeraldImg} alt="Emerald" />
+                <span>Emerald</span>
+              </div>
+            </motion.div>
+
+            <div 
+              className="networkFilterDiv" 
+              ref={networkRef}
+              onMouseEnter={networkMouseEntered}
+            >
+              <motion.div 
+                className="networkTitleDiv"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={networkFilterClicked}
+              >
+                <div className={`networkFilterTitleWrappedDiv ${networkSelected ? 'selected' : ''}`}>
+                  <span>{networkTitle}</span>
+                </div>
+              </motion.div>
+
+              <AnimatePresence>
+                {showNetworkSubFilter === 'block' && (
+                  <motion.div 
+                    className="networkSubfilterDiv"
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    variants={dropdownVariants}
+                  >
+                    <motion.div 
+                      className="subFilterETH" 
+                      onClick={ethNetworkFilterClicked}
+                      whileHover={{ x: 5 }}
+                    >
+                      ETH
+                    </motion.div>
+                    <motion.div 
+                      className="subFilterBSC" 
+                      onClick={bscNetworkFilterClicked}
+                      whileHover={{ x: 5 }}
+                    >
+                      BSC
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
-            <div
-              className="categoryFilterDiv"
-              onMouseEnter={() => categoryMouseEntered(true)}
-              onMouseLeave={() => categoryMouseEntered(false)}
+            <div 
+              className="categoryFilterDiv" 
+              ref={categoryRef}
+              onMouseEnter={categoryMouseEntered}
             >
-              <div className="categoryTitleDiv">
-                {categorySelected === true ? (
-                  <div
-                    className="categoryFilterWrappedDiv"
-                    onClick={categoryFilterClicked}
-                    style={{ backgroundImage: 'linear-gradient(to right, #DC1Bd9, #4EB4C3)' }}
-                  >
-                    <span>&nbsp;{categoryTitle}</span>
-                  </div>
-                ) : (
-                  <div className="categoryFilterWrappedDiv" onClick={categoryFilterClicked}>
-                    <span>&nbsp;{categoryTitle}</span>
-                  </div>
-                )}
-              </div>
+              <motion.div 
+                className="categoryTitleDiv"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={categoryFilterClicked}
+              >
+                <div className={`categoryFilterWrappedDiv ${categorySelected ? 'selected' : ''}`}>
+                  <span>{categoryTitle}</span>
+                </div>
+              </motion.div>
 
-              <div className="categorySubfilterDiv" style={{ display: showCategorySubFilter }}>
-                <div className="topVoteDiv" onClick={topVoteClicked}>
-                  - All time best
-                </div>
-                <div className="todayTopVoteDiv" onClick={todayTopVoteClicked}>
-                  - Today's best
-                </div>
-                <div className="todayListedDiv" onClick={todayListedClicked}>
-                  - Today Listed
-                </div>
-                <div className="presaleDiv" onClick={presaleClicked}>
-                  - Presale
-                </div>
-              </div>
+              <AnimatePresence>
+                {showCategorySubFilter === 'block' && (
+                  <motion.div 
+                    className="categorySubfilterDiv"
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    variants={dropdownVariants}
+                  >
+                    <motion.div className="topVoteDiv" onClick={topVoteClicked} whileHover={{ x: 5 }}>
+                      All time best
+                    </motion.div>
+                    <motion.div className="todayTopVoteDiv" onClick={todayTopVoteClicked} whileHover={{ x: 5 }}>
+                      Today's best
+                    </motion.div>
+                    <motion.div className="todayListedDiv" onClick={todayListedClicked} whileHover={{ x: 5 }}>
+                      Today Listed
+                    </motion.div>
+                    <motion.div className="presaleDiv" onClick={presaleClicked} whileHover={{ x: 5 }}>
+                      Presale
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
@@ -1032,135 +1059,13 @@ export const Filter = (props) => {
           </ThemeProvider>
         </div>
       ) : (
-        <div className="filterDiv">
-          <div className="filterOptionDiv" style={{ overflowX: 'hidden' }}>
-            <div className="diamondFilterDiv">
-              {diamondSelected === true ? (
-                <div
-                  className="diamondFilterWrappedDiv"
-                  style={{ backgroundImage: 'linear-gradient(to right, #DC1Bd9, #4EB4C3)' }}
-                  onClick={diamondFilterClicked}
-                >
-                  <img src={diamondImg} alt="diamondLogo" />
-                  <span>&nbsp;Diamond</span>
-                </div>
-              ) : (
-                <div className="diamondFilterWrappedDiv" onClick={diamondFilterClicked}>
-                  <img src={diamondImg} alt="diamondLogo" />
-                  <span>&nbsp;Diamond</span>
-                </div>
-              )}
-            </div>
-
-            <div className="rubyFilterDiv">
-              {rubySelected === true ? (
-                <div
-                  className="rubyFilterWrappedDiv"
-                  style={{ backgroundImage: 'linear-gradient(to right, #DC1Bd9, #4EB4C3)' }}
-                  onClick={rubyFilterClicked}
-                >
-                  <img src={rubyImg} alt="rubyLogo" />
-                  <span>&nbsp;Ruby</span>
-                </div>
-              ) : (
-                <div className="rubyFilterWrappedDiv" onClick={rubyFilterClicked}>
-                  <img src={rubyImg} alt="rubyLogo" />
-                  <span>&nbsp;Ruby</span>
-                </div>
-              )}
-            </div>
-
-            <div className="emeraldFilterDiv">
-              {emeraldSelected === true ? (
-                <div
-                  className="emeraldFilterWrappedDiv"
-                  style={{ backgroundImage: 'linear-gradient(to right, #DC1Bd9, #4EB4C3)' }}
-                  onClick={emeraldFilterClicked}
-                >
-                  <img src={emeraldImg} alt="emeraldLogo" />
-                  <span>&nbsp;Emerald</span>
-                </div>
-              ) : (
-                <div className="emeraldFilterWrappedDiv" onClick={emeraldFilterClicked}>
-                  <img src={emeraldImg} alt="emeraldLogo" />
-                  <span>&nbsp;Emerald</span>
-                </div>
-              )}
-            </div>
-
-            <div
-              className="networkFilterDiv"
-              onClick={networkFilterClicked}
-              onMouseEnter={() => networkMouseEntered(true)}
-              onMouseLeave={() => networkMouseEntered(false)}
-            >
-              <div className="networkTitleDiv">
-                {networkSelected === true ? (
-                  <div
-                    className="networkFilterTitleWrappedDiv"
-                    onClick={networkFilterClicked}
-                    style={{ backgroundImage: 'linear-gradient(to right, #DC1Bd9, #4EB4C3)' }}
-                  >
-                    <span>&nbsp;{networkTitle}</span>
-                  </div>
-                ) : (
-                  <div className="networkFilterTitleWrappedDiv">
-                    <span>&nbsp;{networkTitle}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="networkSubfilterDiv" style={{ display: showNetworkSubFilter }}>
-                <div className="subFilterETH" onClick={ethNetworkFilterClicked}>
-                  - ETH
-                </div>
-                <div className="subFilterBSC" onClick={bscNetworkFilterClicked}>
-                  - BSC
-                </div>
-              </div>
-            </div>
-
-            <div
-              className="categoryFilterDiv"
-              onMouseEnter={() => categoryMouseEntered(true)}
-              onMouseLeave={() => categoryMouseEntered(false)}
-            >
-              <div className="categoryTitleDiv">
-                {categorySelected === true ? (
-                  <div
-                    className="categoryFilterWrappedDiv"
-                    onClick={categoryFilterClicked}
-                    style={{ backgroundImage: 'linear-gradient(to right, #DC1Bd9, #4EB4C3)' }}
-                  >
-                    <span>&nbsp;{categoryTitle}</span>
-                  </div>
-                ) : (
-                  <div className="categoryFilterWrappedDiv" onClick={categoryFilterClicked}>
-                    <span>&nbsp;{categoryTitle}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="categorySubfilterDiv" style={{ display: showCategorySubFilter }}>
-                <div className="topVoteDiv" onClick={topVoteClicked}>
-                  - All time best
-                </div>
-                <div className="todayTopNitroDiv" onClick={todayTopVoteClicked}>
-                  - Today's best
-                </div>
-                <div className="todayListedDiv" onClick={todayListedClicked}>
-                  - Today Listed
-                </div>
-                <div className="presaleDiv" onClick={presaleClicked}>
-                  - Presale
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="loadingDiv">
-            <img src={loadingImg} alt="loading" />
-          </div>
+        <div className="loadingDiv">
+          <motion.img 
+            src={loadingImg} 
+            alt="loading"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          />
         </div>
       )}
     </div>
